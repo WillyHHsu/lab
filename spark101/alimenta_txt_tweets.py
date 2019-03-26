@@ -2,7 +2,8 @@ from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 import twitter_credentials
-
+import json
+import time
 
 class TwitterStreamer():
 
@@ -16,32 +17,36 @@ class TwitterStreamer():
         auth.set_access_token(twitter_credentials.ACCESS_TOKEN, twitter_credentials.ACCESS_TOKEN_SECRET)
         stream = Stream(auth, listener)
         stream.filter(track=hash_tag_list)
-        stream
+        
 class StdOutListener(StreamListener):
         
-    def __init__(self, fetched_tweets_filename):        
+    def __init__(self, fetched_tweets_filename, time_limit=1):        
         
         auth = OAuthHandler(twitter_credentials.CONSUMER_KEY, twitter_credentials.CONSUMER_SECRET)
         self.fetched_tweets_filename = fetched_tweets_filename
+        self.start_time = time.time()
+        self.limit = time_limit
 
     def on_data(self, data):
-        try:
-            print(data)
-            with open(self.fetched_tweets_filename, 'a') as tf:
-                tf.write(data)
-            return True
-        except BaseException as e:
-            print("Error on_data {}".format(e))
-        return True
+        if (time.time() - self.start_time) < self.limit:
+            try:
+                with open(self.fetched_tweets_filename, 'a') as tf:
+                    tf.write({'id':json.loads(data)['id']
+                         ,'text':json.loads(data)['text']})
+                return True
+            except BaseException as e:
+                print("Error on_data {}".format(e))
+                return True
+        else:
+            return False
+            
     
     def on_error(self, status):
         print(status)
         
 if __name__ == '__main__':
  
-    # Authenticate using config.py and connect to Twitter Streaming API.
     hash_tag_list = ["bolsonaro"]
     fetched_tweets_filename = "tweets.txt"
-
     twitter_streamer = TwitterStreamer()
     twitter_streamer.stream_tweets(fetched_tweets_filename, hash_tag_list)

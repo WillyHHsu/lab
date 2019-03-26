@@ -1,0 +1,16 @@
+if __main__ = main():	
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import explode
+from pyspark.sql.functions import split
+
+spark = SparkSession \
+    .builder \
+    .appName("StructuredNetworkWordCount") \
+    .getOrCreate()
+# df = spark.read.format("json").load("/home/jovyan/git/personal/lab/spark101/twitter/tweets/1110221004025053187.json").toD
+schmaA=spark.read.format("json").load("/home/jovyan/git/personal/lab/spark101/twitter/tweets/1110221004025053187.json").schema
+df = spark.readStream.schema(schmaA).json('/home/jovyan/git/personal/lab/spark101/twitter/tweets/')
+schmaA=spark.read.format("json").load("/home/jovyan/git/personal/lab/spark101/twitter/tweets/1110221004025053187.json").schema
+df = spark.readStream.schema(schmaA).json('/home/jovyan/git/personal/lab/spark101/twitter/tweets/')
+contador = df.select("id").count().writeStream.format("console").outputMode("complete").start()
+
