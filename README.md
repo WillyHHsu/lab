@@ -1,7 +1,7 @@
 # lab
 
--sandbox 
--projetos de um dia
--teste
+- sandbox 
+- projetos de um dia
+- testes
 - rascunho
 
